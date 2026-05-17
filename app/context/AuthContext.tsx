@@ -1,58 +1,84 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { auth, db } from "@/firebase/firebase.config";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 
-const AuthContext = createContext(null);
+type UserData = {
+  uid?: string;
+  name?: string;
+  email?: string;
+  photo?: string | null;
+  provider?: string;
+  role?: string;
+  createdAt?: any;
+};
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [userData, setUserData] = useState(null); // 🔥 TAMBAHAN
-  const [role, setRole] = useState(null);
+type AuthContextType = {
+  user: User | null;
+  userData: UserData | null;
+  role: string | null;
+  loading: boolean;
+  logout: () => Promise<void>;
+};
+
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  userData: null,
+  role: null,
+  loading: true,
+  logout: async () => {},
+});
+
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
+      try {
+        if (currentUser) {
+          setUser(currentUser);
 
-        // 🔥 ambil data dari Firestore
-        const docRef = doc(db, "users", currentUser.uid);
-        const docSnap = await getDoc(docRef);
+          const docRef = doc(db, "users", currentUser.uid);
+          const docSnap = await getDoc(docRef);
 
-        if (docSnap.exists()) {
-          const data = docSnap.data();
+          if (docSnap.exists()) {
+            const data = docSnap.data() as UserData;
 
-          setUserData(data);     // 🔥 SIMPAN SEMUA DATA
-        setRole(data.role?.trim().toLowerCase());  // 🔥 tetap pakai role
-        console.log("USER DATA:", data);
-        console.log("ROLE:", data.role);
+            setUserData(data);
+            setRole(data.role?.trim().toLowerCase() || "user");
+          } else {
+            setUserData(null);
+            setRole("user");
+          }
         } else {
+          setUser(null);
           setUserData(null);
-          setRole("user");
+          setRole(null);
         }
-      } else {
-        setUser(null);
+      } catch (error) {
+        console.error(error);
         setUserData(null);
         setRole(null);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
-  // logout global
-  const logout = async () => {
+  const logout = async (): Promise<void> => {
     await signOut(auth);
   };
 
   return (
-    <AuthContext.Provider value={{ user, userData, role, logout }}>
-      {!loading && children}
+    <AuthContext.Provider value={{ user, userData, role, loading, logout }}>
+      {children}
     </AuthContext.Provider>
   );
 };
