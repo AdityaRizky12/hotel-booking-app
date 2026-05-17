@@ -29,7 +29,7 @@ type Booking = {
   nights: number;
   totalPrice: number;
   status: "pending" | "paid" | "completed" | "cancelled";
-  paymentStatus: "unpaid" | "paid";
+  paymentStatus: "unpaid" | "paid" | "cancelled";
   createdAt?: any;
 };
 

@@ -117,13 +117,13 @@ const ReservationForm = ({ room }: Props) => {
             Check In
           </label>
 
-          <DatePicker
-            selected={checkIn}
-            onChange={(date) => setCheckIn(date)}
-            minDate={new Date()}
-            placeholderText="Select check in"
-            className="w-full border border-gray-300 rounded-md px-4 py-3 outline-none focus:border-orange-400"
-          />
+      <DatePicker
+  selected={checkIn}
+  onChange={(date: Date | null) => setCheckIn(date)}
+  minDate={new Date()}
+  placeholderText="Select check in"
+  wrapperClassName="w-full"
+  className="w-full border border-gray-300 rounded-md px-4 py-3 outline-none focus:border-orange-400"/>
         </div>
 
         {/* CHECK OUT */}
@@ -132,13 +132,13 @@ const ReservationForm = ({ room }: Props) => {
             Check Out
           </label>
 
-          <DatePicker
-            selected={checkOut}
-            onChange={(date) => setCheckOut(date)}
-            minDate={checkIn || new Date()}
-            placeholderText="Select check out"
-            className="w-full border border-gray-300 rounded-md px-4 py-3 outline-none focus:border-orange-400"
-          />
+        <DatePicker
+  selected={checkOut}
+  onChange={(date: Date | null) => setCheckOut(date)}
+  minDate={checkIn || new Date()}
+  placeholderText="Select check out"
+  wrapperClassName="w-full"
+  className="w-full border border-gray-300 rounded-md px-4 py-3 outline-none focus:border-orange-400"/>
         </div>
 
         {/* PRICE */}
